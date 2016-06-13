@@ -49,6 +49,8 @@ setkey(d,annee_naissance)
 d
 plot(d$annee_naissance,d$prime_annee, col='blue')
 
+#plot(aggregate(prime_tot_ttc ~ annee_naissance, maif_train, mean),col='blue')
+
 
 
 
@@ -65,7 +67,7 @@ d2 <- unique(d2[,.(annee_permis,prime_annee)])
 setkey(d2,annee_naissance)
 d2
 plot(d2$annee_permis,d2$prime_annee, col='red')
-
+#plot(aggregate(prime_tot_ttc ~ annee_permis, maif_train, mean),col='blue')
 
 
 # 
