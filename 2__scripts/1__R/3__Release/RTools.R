@@ -1,3 +1,19 @@
+#############################################
+#############################################
+#####                                ########
+#####        INITIALISATION          ########
+#####                                ########
+#############################################
+#############################################
+
+
+#Creation d'une fonction permettant d'installer les packages plus facilement
+#Etapes:
+#- Verification si le package est deja installe
+#   - Si oui, library simule puis OK
+#   - Si non, installe puis simule library
+#Interet : permet d'avoir une commande pour installer et lancer package sans problème d'erreur
+
 Instal_Required <- function(package){
   if(eval(parse(text=paste("require(",package,")")))) 
   {
@@ -10,6 +26,35 @@ Instal_Required <- function(package){
   }
 }
 
+#############################################
+#############################################
+#####                                ########
+#####            PACKAGES            ########
+#####                                ########
+#############################################
+#############################################
+
+#Installation des packages
+Instal_Required("stringr")
+Instal_Required("xlsx")
+
+Instal_Required("devtools")
+Instal_Required("r2excel")
+
+#Si devtools/r2excel ne marche pas, passer par ça :
+#install.packages("devtools")
+#devtools::install_github("kassambara/r2excel")
+#library(r2excel)
+
+#############################################
+#############################################
+#####                                ########
+#####        NUAGE de MOTS           ########
+#####                                ########
+#############################################
+#############################################
+
+#OUTDATE !!
 Nuage_de_mots <- function(variable){
   
   req <- paste("tmp_data <- data.frame(text = Data$", variable, ', stringsAsFactors=FALSE)', sep="")
@@ -51,9 +96,37 @@ Nuage_de_mots <- function(variable){
   return(liste_return)
 }
 
+#############################################
+#############################################
+#####                                ########
+#####           PERCENT              ########
+#####                                ########
+#############################################
+#############################################
+
+#Creation d'une fonction permettant de transformer un numeric en % avec le symbole
 percent <- function(x, digits = 2, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
+
+#############################################
+#############################################
+#####                                ########
+#####           Synthèse             ########
+#####                                ########
+#############################################
+#############################################
+
+#Creation d'une fonction permettant de synthetiser un jeu de donne
+#Etapes:
+#- Pour chaque varaible :
+#   - donne le format
+#   - count le nombre de valeurs
+#   - count le nombre de valeurs manquantes
+#   - count le pourcentage de valeurs manquantes
+#   - count le nombre de valeurs/modalités différentes
+#   - donne un exemple(5) de valeurs/modalités différentes
+#Interet : A lancer sur tout jeu de donnee
 
 Synt_Df <- function(dataframe) {
   options(scipen=999)
@@ -77,6 +150,25 @@ Synt_Df <- function(dataframe) {
   d = d[c("variable","type","n","nmiss","propmiss","valdiff","valex")]
   return(d)
 }
+
+#############################################
+#############################################
+#####                                ########
+#####     COMPARAISON Synthèse       ########
+#####                                ########
+#############################################
+#############################################
+
+#Creation d'une fonction permettant de comparer deux jeu de donnee (Train/Test)
+#Etapes:
+#- Pour chaque jeu :
+#   - utilise la fonction précedente (synthèse)
+#- Pour le jeu Test, compare les donnee avec le jeu train afin de detecter
+# les nouvelles valeurs:
+#   - nombre de nouvelles valeurs
+#   - exemple (5) de nouvelles valeurs
+# Et compte le nombre de type different
+# Interet : Export xsl !! => A realiser sur tout jeu de donnee
 
 Comp_train_test = function(train,test){
   
@@ -127,14 +219,68 @@ Comp_train_test = function(train,test){
   return(df)
 }
 
+#############################################
+#############################################
+#####                                ########
+#####      Analyse descriptive       ########
+#####                                ########
+#############################################
+#############################################
 
-Instal_Required("stringr")
-Instal_Required("xlsx")
+#Creation d'une fonction permettant de generer une analyse descriptive en fonction
+# d'une variable target
+#Etapes:
+# - val train et val test identiques ?
+# - effectif val train et effectif val test identiques ?
+# - boxplot en fonction de target
+# - prix moyen
+# Interet : realiser en data.table !!
 
-Instal_Required("devtools")
-Instal_Required("r2excel")
 
-#install.packages("devtools")
-#devtools::install_github("kassambara/r2excel")
-#library(r2excel)
-
+func_AD = function(data_train, data_test,AD_val,target){
+  
+  # type cat?gorique 
+  data_train[,AD_val:=profession]
+  data_test[,AD_val:=profession]
+  
+  # AD_valeurs TRAIN / TEST identiques ???    yes 
+  # ::::::::::::::::::::::::::::::::::::::::::::::::
+  v_train <- unique(data_train[,.(AD_val)])
+  v_test  <- unique(data_test[,.(AD_val)])
+  setkey(v_train,AD_val)
+  setkey(v_test,AD_val)
+  Test_Identiq = identical(v_test,v_train)
+  
+  # effectifs TRAIN/TEST identiques ??? 
+  # ::::::::::::::::::::::::::::::::
+  par(mfrow=c(2,1))
+  data_train[,count_AD_val:=round(100*.N/nrow(data_train),2),by='AD_val']
+  data_test[,count_AD_val:=round(100*.N/nrow(maif_test) ,2),by='AD_val']
+  tr <- unique(data_train[,.(AD_val,count_AD_val)])
+  te <- unique(data_test[,.(AD_val,count_AD_val)])
+  setkey(tr,AD_val)
+  setkey(te,AD_val)
+  prop <- merge(tr,te,all=T, by='AD_val')
+  prop[,rapp:=count_AD_val.y/count_AD_val.x]
+  
+  # train et test semblent avoir des ?chantillons ? peu pr?s identiques
+  
+  
+  # Prix par Classe : 
+  # ::::::::::::::::::::::::::::::::
+  eval(parse(text = paste("g = ggplot(data_train,aes(",AD_val,",",target,"))")))
+  eval(parse(text = paste("g = g + geom_boxplot(aes(color=",AD_val,"))")))
+  
+  
+  # prix moyens par classes 
+  # ::::::::::::::::::::::::::::::::
+  round(100*table(data_train$AD_val)/nrow(data_train),2)
+  eval(parse(text = paste("data_train[,mean_AD_val:=mean(",target,"),by='AD_val']")))
+  
+  prof <- unique(data_train[,.(AD_val,mean_AD_val)])
+  prof
+  
+  Out <- list("Test_Identiq" = Test_Identiq, "prop" = prop, "plot" = g, "prof" = prof)
+  return(Out)
+  
+}
