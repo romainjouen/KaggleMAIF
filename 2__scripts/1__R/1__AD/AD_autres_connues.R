@@ -9,8 +9,8 @@ library(boot)
 
 setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
 
-maif_train <- fread("Brut_Train.csv", header=T)
-maif_test <- fread("Brut_Test.csv", header=T)
+maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
+maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
 
 
 
@@ -27,7 +27,7 @@ maif_train[,prix_ref:=prime_tot_ttc*100/crm, by=id]
           ##########################################################
 
 
-# type catégorique 
+# type cat?gorique 
 val <- "profession"
 maif_train[,val:=profession]
 maif_test [,val:=profession]
@@ -53,7 +53,7 @@ prop <- merge(tr,te,all=T, by='val')
 prop[,rapp:=count_val.y/count_val.x]
 View(prop)
 
-# train et test semblent avoir des échantillons à peu près identiques
+# train et test semblent avoir des ?chantillons ? peu pr?s identiques
 
 
 # Prix par Classe : 
@@ -82,7 +82,7 @@ prof
 
 
 
-# type catégorique
+# type cat?gorique
 maif_train[,val:=marque]
 maif_test [,val:=marque]
 
@@ -125,7 +125,7 @@ View(prop)
 g <- ggplot(maif_train,aes(val,prix_ref))
 g + geom_boxplot(aes(color=val))
 
-# on voit des différences : faire des clusters de marque ? 
+# on voit des diff?rences : faire des clusters de marque ? 
 
 
 
@@ -149,7 +149,7 @@ prof
               
 
 
-# type catégorique
+# type cat?gorique
 maif_train[,val:=energie_veh]
 maif_test [,val:=energie_veh]
 
@@ -164,7 +164,7 @@ intersect(v_train$val , v_test$val)
 setdiff(v_train$val , v_test$val)
 setdiff(v_test$val  , v_train$val)
 
-# train et test ont les mêmes valeurs 
+# train et test ont les m?mes valeurs 
 
 
 
@@ -181,7 +181,7 @@ prop <- merge(tr,te,all=T, by='val')
 prop[,rapp:=count_val.y/count_val.x]
 View(prop)
 
-# effectifs à peu près similaires 
+# effectifs ? peu pr?s similaires 
 
 
 
@@ -190,7 +190,7 @@ View(prop)
 g <- ggplot(maif_train,aes(val,prix_ref))
 g + geom_boxplot(aes(color=val))
 
-# on voit des différences : faire des clusters de marque ? 
+# on voit des diff?rences : faire des clusters de marque ? 
 
 
 
@@ -220,7 +220,7 @@ prof
               
 
 
-# type catégorique
+# type cat?gorique
 maif_train[,val:=puis_fiscale]
 maif_test [,val:=puis_fiscale]
 
@@ -259,7 +259,7 @@ prop <- merge(tr,te,all=T, by='val')
 prop[,rapp:=count_val.y/count_val.x]
 View(prop)
 
-# effectifs à peu près similaires 
+# effectifs ? peu pr?s similaires 
 # 
 
 
@@ -268,7 +268,7 @@ View(prop)
 g <- ggplot(maif_train,aes(as.character(val),prix_ref))
 g + geom_boxplot(aes(color=as.factor(val)))
 
-# on voit des différences : faire des clusters de marque ? 
+# on voit des diff?rences : faire des clusters de marque ? 
 
 
 
@@ -283,7 +283,7 @@ plot(means$val,means$mean_val)
 
 
 # le prix semble augmenter avec la puis fiscale pour les puis fiscales < 9 ce qui 
-# correspond à la plupart des voitures
+# correspond ? la plupart des voitures
 
 # cela a du sens de mettre la variable en quanti
 
@@ -301,7 +301,7 @@ plot(means$val,means$mean_val)
             
 
 
-# type catégorique
+# type cat?gorique
 maif_train[,val:=kmage_annuel]
 maif_test [,val:=kmage_annuel]
 
@@ -312,14 +312,14 @@ summary(maif_test $val)
 plot(density(maif_train$val), col='blue', freq='F')
 lines(density(maif_test$val), col='red' , freq='F')
 
-# minimum et maximum très proches, distribution quasi identique 
+# minimum et maximum tr?s proches, distribution quasi identique 
 
 
 # Prix par Valeur : 
 # ::::::::::::::::::::::::::::::::
 plot(maif_train$val, maif_train$prix_ref)
 
-# il semble intéressant de faire 4 clusters pour regarder les valeurs par groupe 
+# il semble int?ressant de faire 4 clusters pour regarder les valeurs par groupe 
 # creation des clusters
 maif_train[,km_group:=cut(kmage_annuel, 
                           breaks=c(-1,5000,9500,16500,30000),
@@ -342,8 +342,8 @@ g <- ggplot(maif_train,aes(as.character(val),prix_ref))
 g + geom_boxplot(aes(color=as.factor(val)))
 
 # Il semble pertinent de faire des classes. 
-# Comme on a vu que certaines  valeurs de test dépassent un peu des valeurs de train , 
-# on peut ainsi définir à quel niveau de la variable quanti l'arbre coupe en le définissant nous-même
+# Comme on a vu que certaines  valeurs de test d?passent un peu des valeurs de train , 
+# on peut ainsi d?finir ? quel niveau de la variable quanti l'arbre coupe en le d?finissant nous-m?me
 
 
 
@@ -374,7 +374,7 @@ summary(maif_test $val)
 plot(density(maif_train$val), col='blue')
 lines(density(maif_test$val), col='red' )
 
-# minimum et maximum très proches, distribution quasi identique 
+# minimum et maximum tr?s proches, distribution quasi identique 
 
 
 # Prix par Valeur : 
@@ -385,7 +385,7 @@ d <- unique(maif_train[,.(val,mean_val)])
 setkey(d,val)
 lines(d$val,d$mean_va, col='red')
 
-# il semble intéressant de faire 4 clusters pour regarder les valeurs par groupe 
+# il semble int?ressant de faire 4 clusters pour regarder les valeurs par groupe 
 # creation des clusters
 maif_train[,km_group:=cut(anc_veh, 
                           breaks=c(-1,15,31,70,110),
@@ -408,8 +408,8 @@ g <- ggplot(maif_train,aes(as.character(val),prix_ref))
 g + geom_boxplot(aes(color=as.factor(val)))
 
 # Il semble pertinent de faire des classes. 
-# Comme on a vu que certaines  valeurs de test dépassent un peu des valeurs de train , 
-# on peut ainsi définir à quel niveau de la variable quanti l'arbre coupe en le définissant nous-même
+# Comme on a vu que certaines  valeurs de test d?passent un peu des valeurs de train , 
+# on peut ainsi d?finir ? quel niveau de la variable quanti l'arbre coupe en le d?finissant nous-m?me
 
 
 
@@ -440,7 +440,7 @@ summary(maif_test $val)
 plot(density(maif_train$val), col='blue')
 lines(density(maif_test$val), col='red' )
 
-# minimum et maximum très proches, distribution quasi identique 
+# minimum et maximum tr?s proches, distribution quasi identique 
 
 
 # Prix par Valeur : 
@@ -451,7 +451,7 @@ d <- unique(maif_train[,.(val,mean_val)])
 setkey(d,val)
 lines(d$val,d$mean_va, col='red')
 
-# il semble intéressant de faire 4 clusters pour regarder les valeurs par groupe 
+# il semble int?ressant de faire 4 clusters pour regarder les valeurs par groupe 
 # creation des clusters
 maif_train[,km_group:=cut(anc_veh, 
                           breaks=c(-1,15,31,70,110),
@@ -474,8 +474,8 @@ g <- ggplot(maif_train,aes(as.character(val),prix_ref))
 g + geom_boxplot(aes(color=as.factor(val)))
 
 # Il semble pertinent de faire des classes. 
-# Comme on a vu que certaines  valeurs de test dépassent un peu des valeurs de train , 
-# on peut ainsi définir à quel niveau de la variable quanti l'arbre coupe en le définissant nous-même
+# Comme on a vu que certaines  valeurs de test d?passent un peu des valeurs de train , 
+# on peut ainsi d?finir ? quel niveau de la variable quanti l'arbre coupe en le d?finissant nous-m?me
 
 
 
