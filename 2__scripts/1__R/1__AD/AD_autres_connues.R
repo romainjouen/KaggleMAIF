@@ -26,51 +26,52 @@ maif_train[,prix_ref:=prime_tot_ttc*100/crm, by=id]
           ####                                                  ####
           ##########################################################
 
+source("2__scripts/1__R/3__Release/RTools.R")
+# # type cat?gorique 
+# val <- "profession"
+# maif_train[,val:=profession]
+# maif_test [,val:=profession]
+# 
+# # Valeurs TRAIN / TEST identiques ???    yes 
+# # ::::::::::::::::::::::::::::::::::::::::::::::::
+# v_train <- unique(maif_train[,.(val)])
+# v_test  <- unique(maif_test [,.(val)])
+# setkey(v_train,val)
+# setkey(v_test,val)
+# identical(v_test,v_train)
+# 
+# # effectifs TRAIN/TEST identiques ??? 
+# # ::::::::::::::::::::::::::::::::
+# par(mfrow=c(2,1))
+# maif_train[,count_val:=round(100*.N/300000,2),by='val']
+# maif_test [,count_val:=round(100*.N/30000 ,2),by='val']
+# tr <- unique(maif_train[,.(val,count_val)])
+# te <- unique(maif_test [,.(val,count_val)])
+# setkey(tr,val)
+# setkey(te,val)
+# prop <- merge(tr,te,all=T, by='val')
+# prop[,rapp:=count_val.y/count_val.x]
+# View(prop)
+# 
+# # train et test semblent avoir des ?chantillons ? peu pr?s identiques
+# 
+# 
+# # Prix par Classe : 
+# # ::::::::::::::::::::::::::::::::
+# g <- ggplot(maif_train,aes(profession,prix_ref))
+# g + geom_boxplot(aes(color=profession))
+# 
+# 
+# # prix moyens par classes 
+# # ::::::::::::::::::::::::::::::::
+# round(100*table(maif_train$profession)/300000,2)
+# maif_train[,mean_prof:=mean(prix_ref),by='profession']
+# 
+# prof <- unique(maif_train[,.(profession,mean_prof)])
+# prof
 
-# type cat?gorique 
-val <- "profession"
-maif_train[,val:=profession]
-maif_test [,val:=profession]
-
-# Valeurs TRAIN / TEST identiques ???    yes 
-# ::::::::::::::::::::::::::::::::::::::::::::::::
-v_train <- unique(maif_train[,.(val)])
-v_test  <- unique(maif_test [,.(val)])
-setkey(v_train,val)
-setkey(v_test,val)
-identical(v_test,v_train)
-
-# effectifs TRAIN/TEST identiques ??? 
-# ::::::::::::::::::::::::::::::::
-par(mfrow=c(2,1))
-maif_train[,count_val:=round(100*.N/300000,2),by='val']
-maif_test [,count_val:=round(100*.N/30000 ,2),by='val']
-tr <- unique(maif_train[,.(val,count_val)])
-te <- unique(maif_test [,.(val,count_val)])
-setkey(tr,val)
-setkey(te,val)
-prop <- merge(tr,te,all=T, by='val')
-prop[,rapp:=count_val.y/count_val.x]
-View(prop)
-
-# train et test semblent avoir des ?chantillons ? peu pr?s identiques
-
-
-# Prix par Classe : 
-# ::::::::::::::::::::::::::::::::
-g <- ggplot(maif_train,aes(profession,prix_ref))
-g + geom_boxplot(aes(color=profession))
-
-
-# prix moyens par classes 
-# ::::::::::::::::::::::::::::::::
-round(100*table(maif_train$profession)/300000,2)
-maif_train[,mean_prof:=mean(prix_ref),by='profession']
-
-prof <- unique(maif_train[,.(profession,mean_prof)])
-prof
-
-
+Out = func_AD(data_train = maif_train,data_test = maif_test,target = "prix_ref",AD_val = "profession")
+Out$plot
 
 
           
