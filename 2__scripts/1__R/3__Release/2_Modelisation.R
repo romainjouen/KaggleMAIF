@@ -72,9 +72,33 @@ mod
 ####                                                  ####
 ##########################################################
 
-foret <- randomForest(prix_ref_geo~., data=train_mat, ntrees=5)
+# on enleve tous les NA :
+train_mat
+100-train_mat[,lapply(.SD, function(x) round(100*sum(is.na(x))/nrow(train_mat),2) )
+               ,.SDcols=colnames(train_mat)]   # % remplissage
+train_mat[,id:=seq(1:nrow(train_mat))]
+train_mat[,to_omit:=sum(is.na(c(age_permis,duree_permis))),by='id']
+table(train_mat[,.(to_omit)])
+
+train_mat <- train_mat[to_omit==0]
+train_mat[,to_omit:=NULL]
+train_mat[,id:=NULL]
 
 
+t1 <- Sys.time()
+
+foret <- randomForest(prix_ref_geo~., 
+                      data=train_mat, 
+                      ntrees=5,
+                      mtry=12,
+                      na.action=na.omit)
+
+t2 <- Sys.time()
+t2-t1
+foret
+
+# imputation de valeurs manquantes : 
+na.roughfix(train_mat)
 
 
 # changement des character en factor pour l'inputation des NA 
@@ -84,9 +108,14 @@ cols <- rownames(typ)[which(typ=="character")]
 train_mat[,(cols):=lapply(.SD, as.factor),.SDcols=cols]
 
 
+# on prend 200 000 AU PIF 
+N <- sample(c(1:300000),size=50000,replace=F)
+
+# 
+train_mat_2 <- train_mat[N]
 # imputation de valeurs dans les NA 
 t1 <- Sys.time()
-foret <- rfImpute(prix_ref_geo~., data=train_mat, ntrees=5)
+foret <- rfImpute(prix_ref_geo~., data=train_mat_2, ntrees=50)
 t2 <- Sys.time()
 t2-t1
 foret
