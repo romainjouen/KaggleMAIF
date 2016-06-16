@@ -5,10 +5,10 @@ library(lda)
 library(ggplot2)
 library(randomForest)
 
-# setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/Projet_maif/")
+setwd(dir = "C:/Users/romain.jouen/Documents/GitHub/KaggleMAIF/1__data/")
 
-maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
-maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
+maif_train <- fread("1__input/Brut_Train.csv", header=T)
+maif_test <- fread("1__input/Brut_Test.csv", header=T)
 
 # creation prix_brut
 maif_train[,prix_ref:=100*prime_tot_ttc/crm,by=id]
@@ -55,7 +55,7 @@ dep_indices[,indice_dep:=mean_dep/prix_ref_fra,by='dep']
 indices_dep <- dep_indices[,.(dep, indice_dep)]
 
 # enregistrement des indices par dep 
-save(indices_dep, file="1__data/2__output/Indices_Prix_Departement.Rda")
+save(indices_dep, file="2__output/Indices_Prix_Departement_testRJO.Rda")
 
 
 
