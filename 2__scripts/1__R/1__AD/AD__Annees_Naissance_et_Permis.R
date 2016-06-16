@@ -7,10 +7,10 @@ library(ggplot2)
 library(randomForest)
 library(boot)
 
-setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
+setwd(dir = "C:/Users/romain.jouen/Documents/GitHub/KaggleMAIF/1__data/")
 
-maif_train <- fread("Brut_Train.csv", header=T)
-maif_test <- fread("Brut_Test.csv", header=T)
+maif_train <- fread("1__input/Brut_Train.csv", header=T)
+maif_test <- fread("1__input/Brut_Test.csv", header=T)
 
 N_indiv <- nrow(maif_train)
 
@@ -34,7 +34,7 @@ maif_test[,("codepostal"):=lapply(.SD, as.character),.SDcols="codepostal"]
 
 
 # mise au prix de reference
-maif_test[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
+maif_train[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
 maif_test[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
 
 
