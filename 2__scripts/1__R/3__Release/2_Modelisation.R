@@ -66,10 +66,16 @@ mod
 
 
 
+##########################################################
+####                                                  ####
+###                  FORET ALEATOIRE                   ###
+####                                                  ####
+##########################################################
+
+foret <- randomForest(prix_ref_geo~., data=train_mat, ntrees=5)
 
 
-# FORET ALEATOIRE :
-# :::::::::::::::::
+
 
 # changement des character en factor pour l'inputation des NA 
 typ <- train_mat[,lapply(.SD, function(x) {class(x)}), .SDcols=colnames(train_mat)]
@@ -80,9 +86,11 @@ train_mat[,(cols):=lapply(.SD, as.factor),.SDcols=cols]
 
 # imputation de valeurs dans les NA 
 t1 <- Sys.time()
-foret <- rfImpute(prix_ref_dep~., data=train_mat, ntrees=5)
+foret <- rfImpute(prix_ref_geo~., data=train_mat, ntrees=5)
 t2 <- Sys.time()
 t2-t1
+foret
+
 
 # model fit
 t1 <- Sys.time()
@@ -95,7 +103,7 @@ t2-t1
 pred <- predict(foret, maif_test)
 pred
 
-# impression résultats :
+# impression r?sultats :
 res <- data.table(ID=maif_test$id, COTIS=pred)
 write.table(res,
             "foret.csv",
