@@ -1,9 +1,11 @@
-library(data.table)
-library(ade4)
-library(tree)
-library(lda)
-library(ggplot2)
-library(randomForest)
+source("2__scripts/1__R/3__Release/RTools.R")
+
+Instal_Required("data.table")
+Instal_Required("ade4")
+Instal_Required("tree")
+Instal_Required("lda")
+Instal_Required("ggplot2")
+Instal_Required("randomForest")
 
 # setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/Projet_maif/")
 
