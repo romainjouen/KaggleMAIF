@@ -7,7 +7,7 @@ library(ggplot2)
 library(randomForest)
 library(boot)
 
-setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
+# setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
 
 maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
 maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
@@ -280,14 +280,18 @@ maif_train[,mean_val:=mean(prix_ref),by='val']
 
 means <- unique(maif_train[,.(val,mean_val)])
 means
-plot(means$val,means$mean_val)
+plot(means$val,means$mean_val,ylim=c(0,700),col='blue')
+plot(means$val,means$mean_val,col='blue',xlim=c(0,25))
 
 
-# le prix semble augmenter avec la puis fiscale pour les puis fiscales < 9 ce qui 
+# le prix semble augmenter avec la puis fiscale pour les puis fiscales < 8 ce qui 
 # correspond ? la plupart des voitures
 
 # cela a du sens de mettre la variable en quanti
 
+maif_train[,puis_fiscale_cat:=cut(puis_fiscale, 
+                          breaks=c(-1,7,1000),
+                          labels=c("gr1_croit","gr2_plat"))]
 
 
 
@@ -388,10 +392,10 @@ lines(d$val,d$mean_va, col='red')
 
 # il semble int?ressant de faire 4 clusters pour regarder les valeurs par groupe 
 # creation des clusters
-maif_train[,km_group:=cut(anc_veh, 
+maif_train[,anc_veh_cat:=cut(anc_veh, 
                           breaks=c(-1,15,31,70,110),
                           labels=c("age1","age2","age3","age4"))]
-maif_train[,val:=km_group]
+maif_train[,val:=anc_veh_cat]
 
 # prix moyens par classes 
 # ::::::::::::::::::::::::::::::::

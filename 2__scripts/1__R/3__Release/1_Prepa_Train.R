@@ -74,8 +74,26 @@ train_dep[,age_permis := annee_permis-annee_naissance, by='id']
 train_dep[,duree_permis := 2016 - annee_permis,by='id']
 
 
+          
+          
+          ##########################################################
+          ####                                                  ####
+          ###       CREATION DE CATEG POUR LES VAR QUANTI        ###
+          ####                                                  ####
+          ##########################################################
 
-
+# puissance_fiscale 
+train_dep[,puis_fiscale_cat:=cut(puis_fiscale, 
+                                 breaks=c(-1,7,1000),
+                                 labels=c("gr1_croit","gr2_plat"))]
+# anc_veh
+train_dep[,anc_veh_cat:=cut(anc_veh, 
+                            breaks=c(-1,15,31,70,110),
+                            labels=c("age1","age2","age3","age4"))]
+# kmage_annuel
+train_dep[,km_group:=cut(kmage_annuel, 
+                         breaks=c(-1,5000,9500,16500,30000),
+                         labels=c("km1","km2","km3","km4"))]
 
 
 
