@@ -1,32 +1,36 @@
-library(data.table)
-library(ade4)
-library(tree)
-library(lda)
-library(ggplot2)
-library(randomForest)
+source("2__scripts/1__R/3__Release/RTools.R")
 
-setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
+Instal_Required("data.table")
+Instal_Required("ade4")
+Instal_Required("tree")
+Instal_Required("lda")
+Instal_Required("ggplot2")
+Instal_Required("randomForest")
 
-maif_train <- fread("Brut_Train.csv", header=T)
-maif_test <- fread("Brut_Test.csv", header=T)
+#setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
+
+maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
+maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
 
 
 
-# analyse de la données crm 
+# analyse de la donn?es crm 
 # peut-on l'utiliser pour obtenir facilement le prix d'achat de base : 
 
 
 # distribution de CRM:
 d <- density(maif_train$crm)
 plot(d, col='red')
+lines(density(maif_test$crm), col='blue')
 
-hist(maif_train$crm, freq=F, ylim=c(0,0.09), main="Répartition de CRM")
+
+hist(maif_train$crm, freq=F, ylim=c(0,0.09), main="R?partition de CRM")
 lines(density(maif_train$crm), col='red')
 
 t <- round(100*table(maif_train$crm)/nrow(maif_train),2)
 t
 summary(maif_train$crm)
-# va jusqu'à 270 mais cas très particuliers :
+# va jusqu'? 270 mais cas tr?s particuliers :
 # moins de 0.01% de valeurs au dessus de 195
 
 
@@ -47,7 +51,7 @@ d[,mean_prime_tot:=mean(prime_tot_ttc), by='crm']
 d[,mean_prime_brute:=mean(prime_brute), by='crm']
 
 
-# représentation graphique 
+# repr?sentation graphique 
 d2 <- unique(d[,.(crm,mean_prime_tot,mean_prime_brute)])
 setkey(d2,crm)
 plot(d2$crm, d2$mean_prime_tot , type='b', col='blue', ylim=c(0,1300))
@@ -60,11 +64,11 @@ points(d2$crm,d2$prime_mean, type='b', col='green')
 
 
 
-# peut-être que le facteur d'application du crm n'est pas exactement prix*crm/100
+# peut-?tre que le facteur d'application du crm n'est pas exactement prix*crm/100
 
-# on va faire une régression linéaire pour déterminer le rapport entre le crm e le prix 
+# on va faire une r?gression lin?aire pour d?terminer le rapport entre le crm e le prix 
 
-# sur les moyennes des prix (non pondéré)
+# sur les moyennes des prix (non pond?r?)
 mod1 <- lm(d2$mean_prime_tot~d2$crm)
 summary(mod1)
 
@@ -82,7 +86,7 @@ summary(mod3)
 
 
 
-# on va considérer que le crm s'applique bien comme un bonus malus et qu'on retrouve le prix brut de : 
+# on va consid?rer que le crm s'applique bien comme un bonus malus et qu'on retrouve le prix brut de : 
 # Prix de Base =   prime_totale_ttc * 100 / CRM 
 
 

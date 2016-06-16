@@ -43,8 +43,16 @@ Instal_Required("r2excel")
 
 #Si devtools/r2excel ne marche pas, passer par ça :
 #install.packages("devtools")
-#devtools::install_github("kassambara/r2excel")
+devtools::install_github("kassambara/r2excel")
 #library(r2excel)
+
+Instal_Required("plotly")
+
+Instal_Required("webshot")
+webshot::install_phantomjs()
+Instal_Required("htmlwidgets")
+
+
 
 #############################################
 #############################################
@@ -190,7 +198,7 @@ Comp_train_test = function(train,test){
     names(df) <- Colnames
   }
   df = merge(synth_test,df, by.x = "variable", by.y = "var")
-  file <- paste(getwd(), "/Data_synthese.xlsx", sep="")
+  file <- paste(getwd(), "99__Documents/Data_synthese.xlsx", sep="")
   
   wb <- createWorkbook(type="xlsx")
   sheet <- createSheet(wb, sheetName = "TRAIN")
@@ -234,10 +242,11 @@ Comp_train_test = function(train,test){
 # - effectif val train et effectif val test identiques ?
 # - boxplot en fonction de target
 # - prix moyen
+# - Graphique des moyennes de la var en fonction de la cible
 # Interet : realiser en data.table !!
 
 
-func_AD = function(data_train, data_test,AD_val,target){
+func_AD = function(data_train, data_test,AD_val,target,limit){
   
   # type cat?gorique 
   data_train[,AD_val:=profession]
@@ -274,13 +283,31 @@ func_AD = function(data_train, data_test,AD_val,target){
   
   # prix moyens par classes 
   # ::::::::::::::::::::::::::::::::
-  round(100*table(data_train$AD_val)/nrow(data_train),2)
-  eval(parse(text = paste("data_train[,mean_AD_val:=mean(",target,"),by='AD_val']")))
+  #round(100*table(data_train$AD_val)/nrow(data_train),2)
+  eval(parse(text = paste("prof = data_train[, list(sum_",target," = length(",target,"), mean_",target," = mean(",target,")), by = '",AD_val,"']", sep = "")))
+  #Graphique !!
+  eval(parse(text=paste(
+    "p = plot_ly(data = prof[sum_",target,">limit]
+        ,x=",AD_val,"
+        ,y=mean_",target,"
+        ,mode = 'markers'
+        ,marker = list(size = 20)
+        ,name='Mean') %>%
+layout(title = 'Moyenne des ",target," en fonction de ",AD_val," (limit = ",limit,")')", sep = "")))
   
-  prof <- unique(data_train[,.(AD_val,mean_AD_val)])
-  prof
+  saveWidget(as.widget(p), "temp.html")
+  webshot("temp.html", file = paste("99__Documents/Graphe_Mean_",AD_val,".png", sep = ""), cliprect = "viewport")
+  file.remove("temp.html")
+  d <- recordPlot()
+  if(eval(parse(text=paste("is.integer(data_train$",AD_val,")",sep="")))){
+    png(filename=paste("99__Documents/Graphe_Density_",AD_val,".png", sep = ""))
+    eval(parse(text=paste("plot(density(na.omit(data_train$",AD_val,")), col='red')",sep = "")))
+    eval(parse(text=paste("lines(density(na.omit(data_test$",AD_val,")), col='blue')",sep = "")))
+    d
+    dev.off()
+  }
   
-  Out <- list("Test_Identiq" = Test_Identiq, "prop" = prop, "plot" = g, "prof" = prof)
+  Out <- list("Test_Identiq" = Test_Identiq, "prop" = prop, "boxplot" = g, "prof" = prof,"plotly"=p, "density"=d)
   return(Out)
-  
 }
+

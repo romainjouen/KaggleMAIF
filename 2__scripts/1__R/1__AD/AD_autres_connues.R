@@ -1,11 +1,12 @@
+source("2__scripts/1__R/3__Release/RTools.R")
 
-library(data.table)
-library(ade4)
-library(tree)
-library(lda)
-library(ggplot2)
-library(randomForest)
-library(boot)
+Instal_Required("data.table")
+Instal_Required("ade4")
+Instal_Required("tree")
+Instal_Required("lda")
+Instal_Required("ggplot2")
+Instal_Required("randomForest")
+Instal_Required("boot")
 
 setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
 
@@ -17,6 +18,14 @@ maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
 
 # mise au prix de reference
 maif_train[,prix_ref:=prime_tot_ttc*100/crm, by=id]
+
+
+for(var in colnames(maif_train)){
+  if(var !="id" & var!="prime_ref"){
+    Out = func_AD(data_train = maif_train,data_test = maif_test,target = "prix_ref",AD_val = var, limit=1000)
+    assign(paste(var),Out)
+  }
+}
 
 
 
@@ -70,8 +79,8 @@ source("2__scripts/1__R/3__Release/RTools.R")
 # prof <- unique(maif_train[,.(profession,mean_prof)])
 # prof
 
-Out = func_AD(data_train = maif_train,data_test = maif_test,target = "prix_ref",AD_val = "profession")
-Out$plot
+Out = func_AD(data_train = maif_train,data_test = maif_test,target = "prix_ref",AD_val = "var9")
+Out$plotly
 
 
           
