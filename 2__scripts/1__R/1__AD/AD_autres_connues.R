@@ -7,7 +7,7 @@ library(ggplot2)
 library(randomForest)
 library(boot)
 
-setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
+# setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
 
 maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
 maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
@@ -20,11 +20,11 @@ maif_train[,prix_ref:=prime_tot_ttc*100/crm, by=id]
 
 
 
-          ##########################################################
-          ####                                                  ####
-          ###                    PROFESSION                      ###
-          ####                                                  ####
-          ##########################################################
+##########################################################
+####                                                  ####
+###                    PROFESSION                      ###
+####                                                  ####
+##########################################################
 
 source("2__scripts/1__R/3__Release/RTools.R")
 # # type cat?gorique 
@@ -74,12 +74,12 @@ Out = func_AD(data_train = maif_train,data_test = maif_test,target = "prix_ref",
 Out$plot
 
 
-          
-          ##########################################################
-          ####                                                  ####
-          ###                    MARQUE                          ###
-          ####                                                  ####
-          ##########################################################
+
+##########################################################
+####                                                  ####
+###                    MARQUE                          ###
+####                                                  ####
+##########################################################
 
 
 
@@ -140,14 +140,14 @@ prof
 
 
 
-              
-              
-              ##########################################################
-              ####                                                  ####
-              ###               energie_veh                          ###
-              ####                                                  ####
-              ##########################################################
-              
+
+
+##########################################################
+####                                                  ####
+###               energie_veh                          ###
+####                                                  ####
+##########################################################
+
 
 
 # type cat?gorique
@@ -211,14 +211,14 @@ prof
 
 
 
-              
-              
-              ##########################################################
-              ####                                                  ####
-              ###                    puis_fiscale                    ###
-              ####                                                  ####
-              ##########################################################
-              
+
+
+##########################################################
+####                                                  ####
+###                    puis_fiscale                    ###
+####                                                  ####
+##########################################################
+
 
 
 # type cat?gorique
@@ -280,26 +280,30 @@ maif_train[,mean_val:=mean(prix_ref),by='val']
 
 means <- unique(maif_train[,.(val,mean_val)])
 means
-plot(means$val,means$mean_val)
+plot(means$val,means$mean_val,ylim=c(0,700),col='blue')
+plot(means$val,means$mean_val,col='blue',xlim=c(0,25))
 
 
-# le prix semble augmenter avec la puis fiscale pour les puis fiscales < 9 ce qui 
+# le prix semble augmenter avec la puis fiscale pour les puis fiscales < 8 ce qui 
 # correspond ? la plupart des voitures
 
 # cela a du sens de mettre la variable en quanti
 
+maif_train[,puis_fiscale_cat:=cut(puis_fiscale, 
+                                  breaks=c(-1,7,1000),
+                                  labels=c("gr1_croit","gr2_plat"))]
 
 
 
-            
-            
-            
-            ##########################################################
-            ####                                                  ####
-            ###                    kmage_annuel                    ###
-            ####                                                  ####
-            ##########################################################
-            
+
+
+
+##########################################################
+####                                                  ####
+###                    kmage_annuel                    ###
+####                                                  ####
+##########################################################
+
 
 
 # type cat?gorique
@@ -314,6 +318,13 @@ plot(density(maif_train$val), col='blue', freq='F')
 lines(density(maif_test$val), col='red' , freq='F')
 
 # minimum et maximum tr?s proches, distribution quasi identique 
+
+maif_train[,mean_val:=mean(prix_ref),by='val']
+
+means <- unique(maif_train[,.(val,mean_val)])
+means
+plot(means$val,means$mean_val)
+
 
 
 # Prix par Valeur : 
@@ -354,13 +365,13 @@ g + geom_boxplot(aes(color=as.factor(val)))
 
 
 
-          
-          
-          ##########################################################
-          ####                                                  ####
-          ###                       anc_veh                      ###
-          ####                                                  ####
-          ##########################################################
+
+
+##########################################################
+####                                                  ####
+###                       anc_veh                      ###
+####                                                  ####
+##########################################################
 
 
 
@@ -386,12 +397,23 @@ d <- unique(maif_train[,.(val,mean_val)])
 setkey(d,val)
 lines(d$val,d$mean_va, col='red')
 
+plot(d$val,d$mean_val)
+
 # il semble int?ressant de faire 4 clusters pour regarder les valeurs par groupe 
-# creation des clusters
-maif_train[,km_group:=cut(anc_veh, 
-                          breaks=c(-1,15,31,70,110),
-                          labels=c("age1","age2","age3","age4"))]
-maif_train[,val:=km_group]
+# clusters_basés sur la distribution des valeurs :
+maif_train[,anc_veh_cat:=cut(anc_veh, 
+                             breaks=c(-1,15,31,70,110),
+                             labels=c("age1","age2","age3","age4"))]
+
+#  cluster basés sur les moyennes : 
+maif_train[,anc_veh_cat_2:=cut(anc_veh, 
+                               breaks=c(-1,3,7,15,60,120),
+                               labels=c("age2_1","age2_2","age2_3","age2_4","age2_5"))]
+
+# choix de la variable à regarder
+maif_train[,val:=anc_veh_cat]
+maif_train[,val:=anc_veh_cat_2]
+
 
 # prix moyens par classes 
 # ::::::::::::::::::::::::::::::::
