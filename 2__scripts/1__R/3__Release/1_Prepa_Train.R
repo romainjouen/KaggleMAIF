@@ -86,18 +86,21 @@ train_dep[,duree_permis := 2016 - annee_permis,by='id']
 train_dep[,puis_fiscale_cat:=cut(puis_fiscale, 
                                  breaks=c(-1,7,1000),
                                  labels=c("gr1_croit","gr2_plat"))]
-# anc_veh
+
+# anc_veh : cluster basés sur la distribution des valeurs  : 
 train_dep[,anc_veh_cat:=cut(anc_veh, 
                             breaks=c(-1,15,31,70,110),
                             labels=c("age1","age2","age3","age4"))]
+
+# anc_veh : cluster basés sur le prix de la'assurance  : 
+maif_train[,anc_veh_cat_2:=cut(anc_veh, 
+                               breaks=c(-1,3,7,15,60,120),
+                               labels=c("age2_1","age2_2","age2_3","age2_4","age2_5"))]
+
 # kmage_annuel
 train_dep[,km_group:=cut(kmage_annuel, 
                          breaks=c(-1,5000,9500,16500,30000),
                          labels=c("km1","km2","km3","km4"))]
-
-
-
-
 
 
 
