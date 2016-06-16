@@ -35,7 +35,7 @@ maif_test[,("codepostal"):=lapply(.SD, as.character),.SDcols="codepostal"]
 
 # mise au prix de reference
 maif_train[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
-#maif_test[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
+maif_test[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
 
 
 
