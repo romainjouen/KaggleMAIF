@@ -51,10 +51,28 @@ maif_test[,anc_veh_cat_2:=cut(anc_veh,
 maif_test[,kmage_annuel_cat:=cut(kmage_annuel, 
                              breaks=c(-1,5000,9500,16500,30000),
                              labels=c("km1","km2","km3","km4"))]
-
-
+      
 
       
+      ##########################################################
+      ####                                                  ####
+      ###    INPUTATION DES VARIABLES MANQUANTES (si RF)     ###
+      ####                                                  ####
+      ##########################################################
+
+
+# changement des character en factor pour le package randomForestSRC
+typ <- maif_test[,lapply(.SD, function(x) {class(x)}), .SDcols=colnames(maif_test)]
+typ <- t(as.vector(typ))
+cols <- rownames(typ)[which(typ=="character")]
+maif_test[,(cols):=lapply(.SD, as.factor),.SDcols=cols]
+
+# imputation de valeurs au na (median for int et valeur la plus fréquente pour char)
+maif_test <- na.roughfix(maif_test)
+
+
+
+
       ##########################################################
       ####                                                  ####
       ###              CREATION MATRICE DE TEST              ###
@@ -93,3 +111,8 @@ test_mat  <- maif_test[,.(# prix_ref_geo,
 )]
 
 
+rm(maif_train)
+rm(cols)
+rm(foret)
+rm(t1)
+rm(train_mat)

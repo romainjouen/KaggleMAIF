@@ -4,6 +4,7 @@ library(tree)
 library(lda)
 library(ggplot2)
 library(randomForest)
+library(randomForestSRC)
 
 
 
@@ -90,7 +91,7 @@ train_mat[,id:=NULL]
 
 
 # echantillonage: on prend n parmi les 300 000 
-n <- 500
+n <- nrow(train_mat)
 N <- sample(c(1:300000),size=n,replace=F)
 train_mat_2 <- train_mat[N]
 
@@ -107,14 +108,18 @@ train_mat_2[,(cols):=lapply(.SD, as.factor),.SDcols=cols]
 t1 <- Sys.time()
 foret <- rfsrc(prix_ref_geo~., 
                data=train_mat_2, 
-               ntree=25,
-               mtry=12)
+               ntree=50,
+               mtry=9)
 t2 <- Sys.time()
 t2-t1
 foret
 mod <- foret
 
+save(foret, file="1__data/2__output/Random_Forest_50t_all.Rda")
 
+load(file="1__data/2__output/Random_Forest.Rda")
+
+mod <- foret
 
 ##########################################################
 ####                                                  ####

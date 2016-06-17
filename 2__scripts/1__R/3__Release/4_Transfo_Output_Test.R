@@ -21,9 +21,10 @@ maif_test[,("codepostal"):=lapply(.SD, as.character),.SDcols="codepostal"]
 # prediction :
 pred <- predict(mod, test_mat)
 pred
+pred$predicted
 
 
-
+# rm(mod)
 
 
         
@@ -33,7 +34,7 @@ pred
         ####                                                  ####
         ##########################################################
 
-maif_test[,pred:=pred]
+maif_test[,pred:=pred$predicted]
 maif_test[,pred_ref_fra:=pred*crm/100, by=id]
 
 
