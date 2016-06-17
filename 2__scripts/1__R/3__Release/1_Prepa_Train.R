@@ -10,7 +10,16 @@ library(randomForest)
 maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
 
 
+        
+        
+        ################################################
+        ####                                        ####
+        ###   SUPPRESSION DES VARIABLES ABERRANTES   ###
+        ####                                        ####
+        ################################################
 
+maif_train <- maif_train[annee_permis<=2016]     # -294 :  299 706 / 300 000  
+maif_train <- maif_train[annee_naissance<=1998]  #    0 
 
         ################################################
         ####                                        ####

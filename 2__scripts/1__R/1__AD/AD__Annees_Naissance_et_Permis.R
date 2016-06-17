@@ -145,4 +145,41 @@ plot(d3f$duree_permis,d3f$duree_permis_count, col='blue', type='b',
      main='Dur?e depuis le permis (ann?es) (Proportion)')
 
 
+d3c
+# on voit certaines durées de permis de -2 : on regarde 
+nrow(maif_train[annee_permis>2016])  # on les enleve
+d3 <- d3[duree_permis>=0]
+
+
+
+
+d3c
+# on voit des prix d'assurance bizarre pour duree permis = 8 et 9 ans 
+# on va remplacer les valeurs d'assurance par qqch de plus cohérent : 
+plot(d3c$duree_permis,d3c$duree_permis_mean, col='blue', type='b',
+     main='Duree depuis le permis (ann?es)')
+mod <- lm(d3c$duree_permis_mean[c(5:10,13:28)]~d3c$duree_permis[c(5:10,13:28)])
+mod
+abline(mod$coef[1],mod$coef[2],col='red')
+
+# les valeurs moyennes pour 8 et 9 devraient être :
+val_8_moy <- mod$coef[1] + 8 * mod$coef[2]
+val_9_moy <- mod$coef[1] + 8 * mod$coef[2]
+
+# calcul des indices : prix_moyen_classe / prix_moyen
+indices_duree_permis <- c(val_8_moy,val_9_moy)
+mean(maif_train$prix_ref)
+indices_duree_permis <- indices_duree_permis/mean(maif_train$prix_ref)
+
+save(indices_duree_permis, file="1__data/2__output/Indices_Duree_Permis.Rda")
+
+
+# FAIRE LES BOXPLOT PAR VALEUR POUR VOIR SI QUELQUES VALEURS BIZARRES OU TOUTES CELLE DE 8-9 BIZARRES
+
+g <- ggplot(d3,aes(as.character(duree_permis),prix_ref))
+g + geom_boxplot(aes(color=as.character(duree_permis)))
+
+
+
+
 

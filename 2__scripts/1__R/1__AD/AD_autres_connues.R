@@ -511,3 +511,97 @@ g + geom_boxplot(aes(color=as.factor(val)))
 
 
 
+
+
+
+
+
+
+
+##########################################################
+####                                                  ####
+###                     var3--var5                     ###
+####                                                  ####
+##########################################################
+
+
+
+
+plot(maif_train$var3, maif_train$var5)
+table(maif_train$var3, maif_train$var5)
+
+
+
+
+##########################################################
+####                                                  ####
+###                         var7                       ###
+####                                                  ####
+##########################################################
+
+
+
+
+
+nrow(maif_train[var7=="NR"])
+
+maif_2 <- maif_train[var7!="NR"]
+
+cols <- c("var7")
+maif_2[,(cols):=lapply(.SD, as.numeric),.SDcols=cols]
+
+plot(density(maif_2$var7))
+maif_2[,mean_var7:=mean(prix_ref), by="var7"]
+
+m <- unique(maif_2[,.(var7,mean_var7)])
+setkey(m,var7)
+
+plot(m$var7,m$mean_var7)
+
+
+
+
+##########################################################
+####                                                  ####
+###                         var10                       ###
+####                                                  ####
+##########################################################
+
+maif_train$var11
+
+plot(density(maif_train$var18),col='red')
+lines(density(maif_test$var18),col='blue')
+
+
+plot(maif_train$var9,maif_train$var12)
+abline(0,10,col='red')
+
+
+100*table(maif_train$var14)/nrow(maif_train)
+
+round(100*table(maif_train$var17)/nrow(maif_train),2)
+
+
+
+maif_train[,var:=var17]
+maif_train[,mean_var:=mean(prix_ref), by="var"]
+m <- unique(maif_train[,.(var,mean_var)])
+setkey(m,var)
+
+plot(m$var,m$mean_var)
+
+
+
+
+maif_train[,age:=2016-annee_naissance]
+summary(maif_train$age)
+summary(maif_train$var18)
+
+
+
+maif_train[,age_permis := annee_permis-annee_naissance, by=.(annee_naissance, annee_permis)]
+summary(maif_train$age_permis)
+
+plot(density(maif_train$var18),col='red')
+lines(density(na.omit(maif_train$age)),col='blue')
+lines(density(na.omit(maif_train$age_permis)),col='green')
