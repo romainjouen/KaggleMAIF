@@ -7,10 +7,15 @@ library(ggplot2)
 library(randomForest)
 library(boot)
 
-setwd(dir = "C:/Users/romain.jouen/Documents/GitHub/KaggleMAIF/1__data/")
+# setwd(dir = "C:/Users/felix.rougier/Documents/Challenge/DataScienceNet/maif/")
 
-maif_train <- fread("1__input/Brut_Train.csv", header=T)
-maif_test <- fread("1__input/Brut_Test.csv", header=T)
+maif_train <- fread("1__data/1__input/Brut_Train.csv", header=T)
+maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
+
+# mise au prix de reference
+maif_train[,prix_ref:=prime_tot_ttc*100/crm, by=id]
+maif_test[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
+
 
 N_indiv <- nrow(maif_train)
 
@@ -33,21 +38,16 @@ maif_test[,("codepostal"):=lapply(.SD, as.character),.SDcols="codepostal"]
 
 
 
-# mise au prix de reference
-maif_train[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
-maif_test[,prime_tot_ttc:=prime_tot_ttc*100/crm, by=id]
-
-
 
 # 
 ##    annee_naissance
 ###
 ##############################
 
-plot(maif_train$annee_naissance, maif_train$prime_tot_ttc )
+plot(maif_train$annee_naissance, maif_train$prix_ref )
 
-d <- maif_train[,.(annee_naissance, prime_tot_ttc)]
-d[,prime_annee:=mean(prime_tot_ttc), by=.(annee_naissance)]
+d <- maif_train[,.(annee_naissance, prix_ref)]
+d[,prime_annee:=mean(prix_ref), by=.(annee_naissance)]
 d <- unique(d[,.(annee_naissance,prime_annee)])
 setkey(d,annee_naissance)
 d
@@ -61,10 +61,10 @@ plot(d$annee_naissance,d$prime_annee, col='blue')
 ###
 ##############################
 
-plot(maif_train$annee_permis, maif_train$prime_tot_ttc )
+plot(maif_train$annee_permis, maif_train$prix_ref )
 
-d2 <- maif_train[,.(annee_permis, prime_tot_ttc)]
-d2[,prime_annee:=mean(prime_tot_ttc), by=.(annee_permis)]
+d2 <- maif_train[,.(annee_permis, prix_ref)]
+d2[,prime_annee:=mean(prix_ref), by=.(annee_permis)]
 d2 <- unique(d2[,.(annee_permis,prime_annee)])
 setkey(d2,annee_naissance)
 d2
@@ -79,9 +79,9 @@ plot(d2$annee_permis,d2$prime_annee, col='red')
 
 par(mfrow=c(2,1))
 plot(d$annee_naissance,d$prime_annee, col='blue',
-     main='AnnÈe de naissance')
+     main='Ann?e de naissance')
 plot(d2$annee_permis,d2$prime_annee, col='red',
-     main='AnnÈe du permis')
+     main='Ann?e du permis')
 
 corr(cbind(maif_train$annee_naissance, maif_train$annee_permis))
 mod <- lm(maif_train$annee_permis~maif_train$annee_naissance)
@@ -90,25 +90,25 @@ str(mod)
 
 
 # 
-##    New Variables d'‚ge
+##    New Variables d'age
 ###
 ##############################
 
 # creation des variables
-d3 <- maif_train[,.(annee_naissance, annee_permis,prime_tot_ttc)]
+d3 <- maif_train[,.(annee_naissance, annee_permis,prix_ref)]
 d3[,age_permis := annee_permis-annee_naissance, by=.(annee_naissance, annee_permis)]
 d3[,age_actuel := 2016 - annee_naissance]
 d3[,duree_permis := age_actuel - age_permis]
 
 # calcul des primes moyennes et effectifs par valeurs de variables
-d3[,age_permis_mean   := mean(prime_tot_ttc), by=.(age_permis)]
-d3[,age_actuel_mean   := mean(prime_tot_ttc), by=.(age_actuel)]
-d3[,duree_permis_mean := mean(prime_tot_ttc), by=.(duree_permis)]
+d3[,age_permis_mean   := mean(prix_ref), by=.(age_permis)]
+d3[,age_actuel_mean   := mean(prix_ref), by=.(age_actuel)]
+d3[,duree_permis_mean := mean(prix_ref), by=.(duree_permis)]
 d3[,age_permis_count   := .N/N_indiv, by=.(age_permis)]
 d3[,age_actuel_count   := .N/N_indiv, by=.(age_actuel)]
 d3[,duree_permis_count := .N/N_indiv, by=.(duree_permis)]
 
-# crÈation des sous tables pour les graphes
+# cr?ation des sous tables pour les graphes
 d3a <- unique(d3[,.(age_permis,  age_permis_mean)])
 d3b <- unique(d3[,.(age_actuel,  age_actuel_mean)])
 d3c <- unique(d3[,.(duree_permis,duree_permis_mean)])
@@ -132,7 +132,7 @@ plot(d3a$age_permis,  d3a$age_permis_mean, col='blue', type='b',
 plot(d3b$age_actuel,  d3b$age_actuel_mean, col='red', type='b',
      main='Age actuel')
 plot(d3c$duree_permis,d3c$duree_permis_mean, col='blue', type='b',
-     main='DurÈe depuis le permis (annÈes)')
+     main='Duree depuis le permis (ann?es)')
 
 
 # graphes  des effectifs
@@ -142,7 +142,44 @@ plot(d3d$age_permis,  d3d$age_permis_count, col='blue', type='b',
 plot(d3e$age_actuel,  d3e$age_actuel_count, col='red', type='b',
      main='Age actuel (Proportion)')
 plot(d3f$duree_permis,d3f$duree_permis_count, col='blue', type='b',
-     main='DurÈe depuis le permis (annÈes) (Proportion)')
+     main='Dur?e depuis le permis (ann?es) (Proportion)')
+
+
+d3c
+# on voit certaines dur√©es de permis de -2 : on regarde 
+nrow(maif_train[annee_permis>2016])  # on les enleve
+d3 <- d3[duree_permis>=0]
+
+
+
+
+d3c
+# on voit des prix d'assurance bizarre pour duree permis = 8 et 9 ans 
+# on va remplacer les valeurs d'assurance par qqch de plus coh√©rent : 
+plot(d3c$duree_permis,d3c$duree_permis_mean, col='blue', type='b',
+     main='Duree depuis le permis (ann?es)')
+mod <- lm(d3c$duree_permis_mean[c(5:10,13:28)]~d3c$duree_permis[c(5:10,13:28)])
+mod
+abline(mod$coef[1],mod$coef[2],col='red')
+
+# les valeurs moyennes pour 8 et 9 devraient √™tre :
+val_8_moy <- mod$coef[1] + 8 * mod$coef[2]
+val_9_moy <- mod$coef[1] + 8 * mod$coef[2]
+
+# calcul des indices : prix_moyen_classe / prix_moyen
+indices_duree_permis <- c(val_8_moy,val_9_moy)
+mean(maif_train$prix_ref)
+indices_duree_permis <- indices_duree_permis/mean(maif_train$prix_ref)
+
+save(indices_duree_permis, file="1__data/2__output/Indices_Duree_Permis.Rda")
+
+
+# FAIRE LES BOXPLOT PAR VALEUR POUR VOIR SI QUELQUES VALEURS BIZARRES OU TOUTES CELLE DE 8-9 BIZARRES
+
+g <- ggplot(d3,aes(as.character(duree_permis),prix_ref))
+g + geom_boxplot(aes(color=as.character(duree_permis)))
+
+
 
 
 
