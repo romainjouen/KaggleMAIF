@@ -103,13 +103,16 @@ typ <- t(as.vector(typ))
 cols <- rownames(typ)[which(typ=="character")]
 train_mat_2[,(cols):=lapply(.SD, as.factor),.SDcols=cols]
 
+rm(maif_train,train_mat,typ,cols,n,N)
+
 
 # construction de la forêt
 t1 <- Sys.time()
 foret <- rfsrc(prix_ref_geo~., 
                data=train_mat_2, 
                ntree=50,
-               mtry=9)
+               mtry=9,
+               importance=T)
 t2 <- Sys.time()
 t2-t1
 foret
@@ -117,7 +120,7 @@ mod <- foret
 
 save(foret, file="1__data/2__output/Random_Forest_50t_all.Rda")
 
-load(file="1__data/2__output/Random_Forest.Rda")
+load(file="1__data/2__output/Random_Forest_50t_50k.Rda")
 
 mod <- foret
 
