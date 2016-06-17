@@ -296,11 +296,11 @@ func_AD = function(data_train, data_test,AD_val,target,limit){
 layout(title = 'Moyenne des ",target," en fonction de ",AD_val," (limit = ",limit,")')", sep = "")))
   
   saveWidget(as.widget(p), "temp.html")
-  webshot("temp.html", file = paste("99__Documents/Graphe_Mean_",AD_val,".png", sep = ""), cliprect = "viewport")
+  webshot("temp.html", file = paste("99__Documents/",AD_val,"_Graphe_Mean.png", sep = ""), cliprect = "viewport")
   file.remove("temp.html")
   d <- recordPlot()
   if(eval(parse(text=paste("is.integer(data_train$",AD_val,")",sep="")))){
-    png(filename=paste("99__Documents/Graphe_Density_",AD_val,".png", sep = ""))
+    png(filename=paste("99__Documents/",AD_val,"_Graphe_Mean.png", sep = ""))
     eval(parse(text=paste("plot(density(na.omit(data_train$",AD_val,")), col='red')",sep = "")))
     eval(parse(text=paste("lines(density(na.omit(data_test$",AD_val,")), col='blue')",sep = "")))
     d
