@@ -43,14 +43,16 @@ Instal_Required("r2excel")
 
 #Si devtools/r2excel ne marche pas, passer par ça :
 #install.packages("devtools")
-devtools::install_github("kassambara/r2excel")
+#devtools::install_github("kassambara/r2excel")
 #library(r2excel)
 
 Instal_Required("plotly")
 
 Instal_Required("webshot")
-webshot::install_phantomjs()
+#webshot::install_phantomjs()
 Instal_Required("htmlwidgets")
+
+Instal_Required("ReporteRs")
 
 
 
@@ -198,7 +200,7 @@ Comp_train_test = function(train,test){
     names(df) <- Colnames
   }
   df = merge(synth_test,df, by.x = "variable", by.y = "var")
-  file <- paste(getwd(), "99__Documents/Data_synthese.xlsx", sep="")
+  file <- paste(getwd(), "/99__Documents/Data_synthese2.xlsx", sep="")
   
   wb <- createWorkbook(type="xlsx")
   sheet <- createSheet(wb, sheetName = "TRAIN")
@@ -246,11 +248,16 @@ Comp_train_test = function(train,test){
 # Interet : realiser en data.table !!
 
 
-func_AD = function(data_train, data_test,AD_val,target,limit){
+func_AD = function(data_train,
+                   data_test,
+                   target="none",
+                   AD_val="none",
+                   limit=1000,
+                   export=TRUE){
   
   # type cat?gorique 
-  data_train[,AD_val:=profession]
-  data_test[,AD_val:=profession]
+  eval(parse(text = paste("data_train[,AD_val:=",AD_val,"]")))
+  eval(parse(text = paste("data_test[,AD_val:=",AD_val,"]")))
   
   # AD_valeurs TRAIN / TEST identiques ???    yes 
   # ::::::::::::::::::::::::::::::::::::::::::::::::
@@ -262,7 +269,7 @@ func_AD = function(data_train, data_test,AD_val,target,limit){
   
   # effectifs TRAIN/TEST identiques ??? 
   # ::::::::::::::::::::::::::::::::
-  par(mfrow=c(2,1))
+  #par(mfrow=c(2,1))
   data_train[,count_AD_val:=round(100*.N/nrow(data_train),2),by='AD_val']
   data_test[,count_AD_val:=round(100*.N/nrow(maif_test) ,2),by='AD_val']
   tr <- unique(data_train[,.(AD_val,count_AD_val)])
@@ -288,26 +295,188 @@ func_AD = function(data_train, data_test,AD_val,target,limit){
   #Graphique !!
   eval(parse(text=paste(
     "p = plot_ly(data = prof[sum_",target,">limit]
-        ,x=",AD_val,"
-        ,y=mean_",target,"
-        ,mode = 'markers'
-        ,marker = list(size = 20)
-        ,name='Mean') %>%
-layout(title = 'Moyenne des ",target," en fonction de ",AD_val," (limit = ",limit,")')", sep = "")))
-  
-  saveWidget(as.widget(p), "temp.html")
-  webshot("temp.html", file = paste("99__Documents/",AD_val,"_Graphe_Mean.png", sep = ""), cliprect = "viewport")
-  file.remove("temp.html")
-  d <- recordPlot()
-  if(eval(parse(text=paste("is.integer(data_train$",AD_val,")",sep="")))){
-    png(filename=paste("99__Documents/",AD_val,"_Graphe_Mean.png", sep = ""))
-    eval(parse(text=paste("plot(density(na.omit(data_train$",AD_val,")), col='red')",sep = "")))
-    eval(parse(text=paste("lines(density(na.omit(data_test$",AD_val,")), col='blue')",sep = "")))
-    d
-    dev.off()
+          ,x=",AD_val,"
+          ,y=mean_",target,"
+          ,mode = 'markers'
+          ,marker = list(size = 20)
+          ,name='Mean') %>%
+  layout(title = 'Moyenne des ",target," en fonction de ",AD_val," (limit = ",limit,")')", sep = "")))
+  if(export){
+    saveWidget(as.widget(p), "temp.html")
+    webshot("temp.html", file = paste("99__Documents/",AD_val,"_Graphe_Mean.png", sep = ""), cliprect = "viewport")
+    file.remove("temp.html")
+    
+    if(eval(parse(text=paste("is.integer(data_train$",AD_val,")",sep="")))){
+      eval(parse(text=paste("plot(density(na.omit(data_train$",AD_val,")), col='red')",sep = "")))
+      eval(parse(text=paste("lines(density(na.omit(data_test$",AD_val,")), col='blue')",sep = "")))
+      d <- recordPlot()
+      png(filename=paste("99__Documents/",AD_val,"_Graphe_Density.png", sep = ""))
+      print(d)
+      dev.off()
+      #rm(d)
+    }else{
+      eval(parse(text=paste("plot(prop.table(table(data_train$",AD_val,")), type = 'p', col='red')",sep = "")))
+      eval(parse(text=paste("lines(prop.table(table(data_test$",AD_val,")), type = 'p', col='blue')",sep = "")))
+      d <- recordPlot()
+      png(filename=paste("99__Documents/",AD_val,"_Graphe_Density.png", sep = ""))
+      print(d)
+      dev.off()
+      #rm(d)
+    }
   }
-  
   Out <- list("Test_Identiq" = Test_Identiq, "prop" = prop, "boxplot" = g, "prof" = prof,"plotly"=p, "density"=d)
   return(Out)
 }
 
+Synthese = function(data_train,
+                    data_test,
+                    target="none",
+                    AD_val="none",
+                    limit=1000,
+                    export=TRUE,
+                    rapport=TRUE,
+                    without=c())
+{
+  
+  print("*******  Fonction synthese START *****")
+  
+  synth_train = Synt_Df(data_train)
+  print("* synthese TRAIN => OK")
+  synth_test = Synt_Df(data_test)
+  
+  df = data.frame(var=character(), nb_new = character(), value_new = character(), stringsAsFactors = FALSE)
+  i=0
+  Colnames <- names(df)
+  for (item in colnames(data_test)){
+    i = i+1
+    eval(parse(text = paste("df[",i,",] = c('",item,"',length(match(data_test$",
+                            item,",data_train$",item,", nomatch = 0)[match(data_test$",
+                            item,",data_train$",item,", nomatch = 0)==0]),if(length(match(data_test$",
+                            item,",data_train$",item,", nomatch = 0)[match(data_test$",
+                            item,",data_train$",item,", nomatch = 0)==0])!=0){str_c(head(unique(data_test[row(as.data.frame(match(data_test$",
+                            item,",data_train$",item,", nomatch = 0)))[match(data_test$",
+                            item,",data_train$",item,", nomatch = 0)==0],]$",item,",)), collapse = '/')}else{'O'})", sep = "")))
+    
+    names(df) <- Colnames
+  }
+  synth_test = merge(synth_test,df, by.x = "variable", by.y = "var")
+  print("* synthese TEST => OK")
+  synth_type = as.data.frame(table(sapply(data_train, class)))
+  print("* synthese TYPE => OK")
+  
+  Out <- list("synthese_train"=synth_train,
+              "synthese_test"=synth_test,
+              "synthese_type"=synth_type)
+  
+  
+  if(export){
+    file <- paste(getwd(), "/99__Documents/Data_synthese.xlsx", sep="")
+    
+    wb <- createWorkbook(type="xlsx")
+    sheet <- createSheet(wb, sheetName = "TRAIN")
+    # Ajouter un titre
+    xlsx.addHeader(wb, sheet, value="Synthese TRAIN",level=1,color="black")
+    xlsx.addLineBreak(sheet, 1)
+    # Ajouter une table : data.frame
+    xlsx.addTable(wb, sheet, synth_train)
+    
+    sheet <- createSheet(wb, sheetName = "TEST")
+    # Ajouter un titre
+    xlsx.addHeader(wb, sheet, value="Synthese TEST",level=1,color="black")
+    xlsx.addLineBreak(sheet, 1)
+    # Ajouter une table : data.frame
+    xlsx.addTable(wb, sheet, synth_test)
+    
+    sheet <- createSheet(wb, sheetName = "TYPE")
+    # Ajouter un titre
+    xlsx.addHeader(wb, sheet, value="Synthese TYPE",level=1,color="black")
+    xlsx.addLineBreak(sheet, 1)
+    # Ajouter une table : data.frame
+    
+    xlsx.addTable(wb, sheet, synth_type)
+    
+    saveWorkbook(wb, file)
+    print("* Export => OK")
+  }
+  
+  if(rapport){
+    # Chargement du template
+    doc <- pptx(template="99__Documents/Template.pptx" )
+    
+    
+    # Diapo 1 : Diapositive de titre
+    #+++++++++++++++++++++++
+    doc <- addSlide(doc, "Titre")
+    doc <- addTitle(doc,"Rapport automatisé RSTUDIO")
+    doc <- addParagraph(doc, "Réalisé par Lejaille Thibault")
+    
+    # Diapo 2 : Ajoute sous rubriques
+    #+++++++++++++++++++++++ 
+    doc <- addSlide(doc, "Sous rubriques")
+    doc <- addTitle(doc,"Synthèse")
+    
+    # Diapo 3 : Ajoute table synthèse TRAIN
+    #+++++++++++++++++++++++
+    doc <- addSlide(doc, "Titre+contenu")
+    doc <- addTitle(doc,"Synthèse TRAIN")
+    MyFTable <- vanilla.table(synth_train)
+    MyFTable <- setZebraStyle(MyFTable, odd = '#eeeeee', even = 'white')
+    MyFTable = setFlexTableBackgroundColors( MyFTable, i = 1,colors = "gray", to = "header" )
+    doc = addFlexTable(doc,MyFTable)
+    
+    # Diapo 4 : Ajoute table synthèse TEST
+    #+++++++++++++++++++++++
+    doc <- addSlide(doc, "Titre+contenu")
+    doc <- addTitle(doc,"Synthèse TRAIN")
+    MyFTable <- vanilla.table(synth_test)
+    MyFTable <- setZebraStyle(MyFTable, odd = '#eeeeee', even = 'white')
+    MyFTable = setFlexTableBackgroundColors( MyFTable, i = 1,colors = "gray", to = "header" )
+    doc = addFlexTable(doc,MyFTable)
+    
+    # Diapo 5 : Ajoute table synthèse TYPE
+    #+++++++++++++++++++++++
+    doc <- addSlide(doc, "Titre+contenu")
+    doc <- addTitle(doc,"Synthèse TRAIN")
+    MyFTable <- vanilla.table(synth_type)
+    MyFTable <- setZebraStyle(MyFTable, odd = '#eeeeee', even = 'white')
+    MyFTable = setFlexTableBackgroundColors( MyFTable, i = 1,colors = "gray", to = "header" )
+    doc = addFlexTable(doc,MyFTable)
+    
+    # Enregistrer le document 
+    writeDoc(doc, "99__Documents/Rapport.pptx" )
+    print("* Rapport synthese=> OK")
+  }
+  
+  for(var in colnames(data_train)){
+    if(is.element(var, without)==FALSE){
+      AD = list(func_AD(data_train,data_test,target,var,limit))
+      assign(paste(var),AD)
+      eval(parse(text=paste("Out = c(Out,'",var,"'=",var,")", sep = )))
+      if(rapport){
+        doc <- addSlide(doc, "Plots")
+        doc <- addTitle(doc,paste("Variable :",var))
+        doc <- addImage(doc,paste("99__Documents/",var,"_Graphe_Density.png", sep = ""))
+        doc <- addImage(doc,paste("99__Documents/",var,"_Graphe_Mean.png", sep = ""))
+        doc <- addParagraph(doc, "Commentaires :")
+        writeDoc(doc, "Rapport.pptx" )
+        print(paste("* synthese & Rapport",var,"=> OK"))
+      }else{
+        print(paste("* synthese",var,"=> OK"))
+      }
+    }
+  }
+  
+  
+  
+  # ,
+  #             "Test_Identiq" = Test_Identiq,
+  #             "prop" = prop,
+  #             "boxplot" = g,
+  #             "prof" = prof,
+  #             "plotly"=p,
+  #             "density"=d)
+  
+  print("*******  Fonction synthese END  *****")
+  
+  return(Out)
+}

@@ -20,13 +20,12 @@ maif_test <- fread("1__data/1__input/Brut_Test.csv", header=T)
 maif_train[,prix_ref:=prime_tot_ttc*100/crm, by=id]
 
 
-for(var in colnames(maif_train)){
-  if(var !="id" & var!="prime_ref"){
-    Out = func_AD(data_train = maif_train,data_test = maif_test,target = "prix_ref",AD_val = var, limit=1000)
-    assign(paste(var),Out)
-  }
-}
-
+Out = Synthese(data_train = maif_train,
+               data_test = maif_test,
+               export=TRUE, 
+               rapport=TRUE, 
+               target = "prix_ref",
+               without=c("id","prime_tot_ttc"))
 
 
 ##########################################################
